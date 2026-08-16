@@ -1,0 +1,12 @@
+Section: web
+Priority: optional
+Maintainer: Dario Griffo <dariogriffo@gmail.com>
+Homepage: https://github.com/yt-dlp/yt-dlp
+Package: yt-dlp
+Version: YT_DLP_VERSION-BUILD_VERSION~DIST
+Architecture: SUPPORTED_ARCHITECTURES
+Depends: python3 (>= 3.9)
+Recommends: ca-certificates, ffmpeg
+Suggests: aria2 | wget | curl, deno | nodejs, python3-brotli, python3-mutagen, python3-pycryptodome, python3-secretstorage, python3-websockets
+Description: A feature-rich command-line audio/video downloader.
+

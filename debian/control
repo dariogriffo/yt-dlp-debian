@@ -1,0 +1,22 @@
+Source: yt-dlp
+Section: web
+Priority: optional
+Maintainer: Dario Griffo <dariogriffo@gmail.com>
+Build-Depends: debhelper-compat (= 13)
+Standards-Version: 4.6.2
+Homepage: https://github.com/yt-dlp/yt-dlp
+Rules-Requires-Root: no
+
+Package: yt-dlp
+Architecture: all
+Depends: python3 (>= 3.9), ${misc:Depends}
+Recommends: ca-certificates, ffmpeg
+Suggests: aria2 | wget | curl, deno | nodejs, python3-brotli, python3-mutagen,
+ python3-pycryptodome, python3-secretstorage, python3-websockets
+Description: A feature-rich command-line audio/video downloader
+ yt-dlp is a feature-rich command-line audio/video downloader with support for
+ thousands of sites. It is a fork of youtube-dl based on the now inactive
+ youtube-dlc.
+ .
+ This package ships the official upstream zipapp release, so it is independent
+ of the Python modules packaged by the distribution.

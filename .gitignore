@@ -1,0 +1,14 @@
+# .deb Packages
+*.deb
+
+# Source packages
+*.dsc
+*.orig.tar.gz
+*.debian.tar.xz
+
+# Extracted upstream release tarball
+/yt-dlp/
+yt-dlp.tar.gz
+
+.idea/*
+.DS_Store

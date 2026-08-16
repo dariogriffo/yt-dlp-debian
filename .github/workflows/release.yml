@@ -1,0 +1,89 @@
+name: Build yt-dlp for Debian
+
+on:
+  workflow_dispatch:
+    inputs:
+      yt_dlp_version:
+        description: The version of yt-dlp to build.
+        type: string
+        required: true
+      build_version:
+        description: The build version.
+        type: string
+        required: true
+
+permissions:
+  contents: write
+
+jobs:
+  build-yt-dlp:
+    name: Build Binary Packages
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout yt-dlp-debian
+        uses: actions/checkout@v4
+
+      - name: Validate upstream license permits paid distribution
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+        run: ./validate_license.sh ${{ inputs.yt_dlp_version }}
+
+      - name: Build yt-dlp
+        run: ./build_debian.sh ${{ inputs.yt_dlp_version }} ${{ inputs.build_version }} && ./build_ubuntu.sh ${{ inputs.yt_dlp_version }} ${{ inputs.build_version }}
+
+      - name: Upload Binary Artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: binary-artifact
+          path: yt-dlp_*.deb
+
+  build-src:
+    name: Build Source Packages
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout yt-dlp-debian
+        uses: actions/checkout@v4
+
+      - name: Install dpkg-dev
+        run: sudo apt-get update && sudo apt-get install -y --no-install-recommends dpkg-dev devscripts wget ca-certificates
+
+      - name: Build source packages
+        run: ./build_src.sh ${{ inputs.yt_dlp_version }} ${{ inputs.build_version }}
+
+      - name: Upload Source Artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: source-artifact
+          path: |
+            yt-dlp_*.dsc
+            yt-dlp_*.orig.tar.gz
+            yt-dlp_*.debian.tar.xz
+
+  release-yt-dlp:
+    name: Release yt-dlp for Debian
+    if: github.event_name == 'workflow_dispatch' && github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+    needs: [build-yt-dlp, build-src]
+    steps:
+      - name: Download Binary Artifacts
+        uses: actions/download-artifact@v4
+        with:
+          name: binary-artifact
+
+      - name: Download Source Artifacts
+        uses: actions/download-artifact@v4
+        with:
+          name: source-artifact
+
+      - name: Publish Release
+        uses: softprops/action-gh-release@v2
+        with:
+          draft: false
+          files: |
+            yt-dlp_*.deb
+            yt-dlp_*.dsc
+            yt-dlp_*.orig.tar.gz
+            yt-dlp_*.debian.tar.xz
+          name: ${{ inputs.yt_dlp_version }}+${{ inputs.build_version }}
+          tag_name: ${{ inputs.yt_dlp_version }}+${{ inputs.build_version }}
+          fail_on_unmatched_files: true
