@@ -1,7 +1,5 @@
-ARG DEBIAN_DIST=bookworm
 FROM debian:bookworm
 
-ARG DEBIAN_DIST
 ARG YT_DLP_VERSION
 ARG BUILD_VERSION
 ARG FULL_VERSION
@@ -28,9 +26,7 @@ RUN chmod 755 /output/DEBIAN/postinst
 COPY output/copyright /output/usr/share/doc/yt-dlp/
 COPY output/changelog.Debian /output/usr/share/doc/yt-dlp/
 
-RUN sed -i "s/DIST/$DEBIAN_DIST/" /output/usr/share/doc/yt-dlp/changelog.Debian
 RUN sed -i "s/FULL_VERSION/$FULL_VERSION/" /output/usr/share/doc/yt-dlp/changelog.Debian
-RUN sed -i "s/DIST/$DEBIAN_DIST/" /output/DEBIAN/control
 RUN sed -i "s/YT_DLP_VERSION/$YT_DLP_VERSION/" /output/DEBIAN/control
 RUN sed -i "s/BUILD_VERSION/$BUILD_VERSION/" /output/DEBIAN/control
 RUN sed -i "s/SUPPORTED_ARCHITECTURES/$ARCH/" /output/DEBIAN/control
@@ -48,4 +44,4 @@ RUN gzip -9n /output/usr/share/man/man1/yt-dlp.1 \
     /output/usr/share/doc/yt-dlp/README.md \
     /output/usr/share/doc/yt-dlp/changelog.Debian
 
-RUN dpkg-deb --build /output /yt-dlp_${FULL_VERSION}.deb
+RUN dpkg-deb -Zxz --build /output /yt-dlp_${FULL_VERSION}.deb

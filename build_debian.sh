@@ -41,34 +41,32 @@ build_packages() {
         return 1
     fi
 
-    declare -a arr=("bookworm" "trixie" "forky" "sid")
+    # One package for every suite: upstream ships one binary per architecture,
+    # so only the old ~<suite> version suffix ever differed. The fixed ~griffo
+    # keeps it below the distro's own build of the same version.
+    FULL_VERSION="$YT_DLP_VERSION-${BUILD_VERSION}~griffo_${ARCH}"
+    echo "  Building $FULL_VERSION"
 
-    for dist in "${arr[@]}"; do
-        FULL_VERSION="$YT_DLP_VERSION-${BUILD_VERSION}~${dist}_${ARCH}"
-        echo "  Building $FULL_VERSION"
+    if ! docker build . -t "yt-dlp-$ARCH" \
+        --build-arg YT_DLP_VERSION="$YT_DLP_VERSION" \
+        --build-arg BUILD_VERSION="$BUILD_VERSION" \
+        --build-arg FULL_VERSION="$FULL_VERSION" \
+        --build-arg ARCH="$ARCH" \
+        --build-arg YT_DLP_SRC="$YT_DLP_SRC"; then
+        echo "❌ Failed to build Docker image"
+        return 1
+    fi
 
-        if ! docker build . -t "yt-dlp-$dist-$ARCH" \
-            --build-arg DEBIAN_DIST="$dist" \
-            --build-arg YT_DLP_VERSION="$YT_DLP_VERSION" \
-            --build-arg BUILD_VERSION="$BUILD_VERSION" \
-            --build-arg FULL_VERSION="$FULL_VERSION" \
-            --build-arg ARCH="$ARCH" \
-            --build-arg YT_DLP_SRC="$YT_DLP_SRC"; then
-            echo "❌ Failed to build Docker image for $dist"
-            return 1
-        fi
+    id="$(docker create "yt-dlp-$ARCH")"
+    if ! docker cp "$id:/yt-dlp_$FULL_VERSION.deb" - > "./yt-dlp_$FULL_VERSION.deb"; then
+        echo "❌ Failed to extract .deb package"
+        return 1
+    fi
 
-        id="$(docker create "yt-dlp-$dist-$ARCH")"
-        if ! docker cp "$id:/yt-dlp_$FULL_VERSION.deb" - > "./yt-dlp_$FULL_VERSION.deb"; then
-            echo "❌ Failed to extract .deb package for $dist"
-            return 1
-        fi
-
-        if ! tar -xf "./yt-dlp_$FULL_VERSION.deb"; then
-            echo "❌ Failed to extract .deb contents for $dist"
-            return 1
-        fi
-    done
+    if ! tar -xf "./yt-dlp_$FULL_VERSION.deb"; then
+        echo "❌ Failed to extract .deb contents"
+        return 1
+    fi
 
     # Clean up extracted directory
     rm -rf "$YT_DLP_SRC" || true

@@ -29,7 +29,7 @@ jobs:
         run: ./validate_license.sh ${{ inputs.yt_dlp_version }}
 
       - name: Build yt-dlp
-        run: ./build_debian.sh ${{ inputs.yt_dlp_version }} ${{ inputs.build_version }} && ./build_ubuntu.sh ${{ inputs.yt_dlp_version }} ${{ inputs.build_version }}
+        run: ./build_debian.sh ${{ inputs.yt_dlp_version }} ${{ inputs.build_version }}
 
       - name: Upload Binary Artifacts
         uses: actions/upload-artifact@v4
